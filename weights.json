@@ -1,0 +1,35 @@
+{
+  "_comment": "Scoring config (PRD §15.3 weights, BUILDSPEC tier bands + ops params). Weights are normalized so overall is 0-100; changing anything here triggers Python recompute only — no LLM re-calls.",
+  "weights": {
+    "functional_responsibility_match": 25,
+    "seniority_scope_match": 15,
+    "product_domain_match": 15,
+    "skills_experience_match": 15,
+    "location_work_arrangement": 10,
+    "industry_mission_match": 8,
+    "compensation_match": 5,
+    "company_stage_match": 4,
+    "posting_freshness": 3
+  },
+  "tier_bands": {
+    "_comment": "half-open intervals [min, max)",
+    "excellent": [85, 101],
+    "strong": [75, 85],
+    "possible": [60, 75],
+    "weak": [40, 60],
+    "hidden_below": 40
+  },
+  "scoring": {
+    "model": "claude-sonnet-5",
+    "prompt_version": "v5",
+    "max_llm_calls_per_run": 150,
+    "first_run_max_posting_age_days": 30,
+    "max_retries_per_listing": 2
+  },
+  "dedupe": {
+    "near_dup_similarity_threshold": 90
+  },
+  "freshness": {
+    "possibly_removed_after_consecutive_absences": 3
+  }
+}

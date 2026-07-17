@@ -1,0 +1,22 @@
+# personal data — never in source control (BUILDSPEC repo hygiene)
+profile.md
+preferences.yaml
+resume_extracted.txt
+golden_set.jsonl
+radar.db
+radar.db-*
+.env
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# artifacts
+job-radar-docs.zip
+
+# personal job-search data & generated artifacts
+golden_set_candidates.md
+scripts/pm_title_inventory.txt
+logs/

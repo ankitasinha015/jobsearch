@@ -49,12 +49,19 @@ def feed_context(request: Request) -> dict:
                 for key, label in TIERS]
     buckets = {name: [i for i in items if i["disposition"] == name]
                for name in ("saved", "applied", "dismissed")}
+    scan_running = db.scan_in_progress(c)
+    scoring_progress = 0
+    if scan_running and last:
+        scoring_progress = c.execute(
+            "SELECT COUNT(*) FROM evaluations WHERE evaluated_at >= ?",
+            (last["started_at"],)).fetchone()[0]
     ctx = {
         "request": request,
         "sections": sections,
         "buckets": buckets,
         "reasons": DISMISS_REASONS,
-        "scan_running": db.scan_in_progress(c),
+        "scan_running": scan_running,
+        "scoring_progress": scoring_progress,
         "last": dict(last) if last else None,
         "last_errors": json.loads(last["errors"] or "[]") if last else [],
         "fresh_count": len(fresh),
@@ -71,6 +78,11 @@ def index(request: Request):
 @app.get("/scan/status", response_class=HTMLResponse)
 def scan_status(request: Request):
     return templates.TemplateResponse(request, "_scanbar.html", feed_context(request))
+
+
+@app.get("/feed", response_class=HTMLResponse)
+def feed_fragment(request: Request):
+    return templates.TemplateResponse(request, "_feed.html", feed_context(request))
 
 
 def _run_scan():
@@ -102,6 +114,16 @@ def disposition(request: Request, job_key: str, status: str = Form(...),
 
 @app.post("/tune/propose", response_class=HTMLResponse)
 def tune_propose(request: Request, feedback: str = Form(...)):
+    try:
+        return _tune_propose(request, feedback)
+    except Exception as e:  # visible error, never a silent failure (design D5)
+        return HTMLResponse(
+            "<div class='tune-note err'>The proposal call failed "
+            f"({type(e).__name__}). Your preferences are unchanged — "
+            "try again in a moment.</div>")
+
+
+def _tune_propose(request: Request, feedback: str):
     import anthropic
     import secrets
     client = anthropic.Anthropic()

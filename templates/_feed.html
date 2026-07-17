@@ -1,21 +1,51 @@
 <div id="feed-inner">
+{% if scan_running %}
+  <div class="chip">
+    Scan in progress — {{ scoring_progress }} jobs scored so far this run.
+    <button class="chipbtn" hx-get="/feed" hx-target="#feed-inner" hx-swap="outerHTML">Refresh feed</button>
+  </div>
+{% endif %}
+
 {% set any_shown = namespace(v=false) %}
 {% for key, label, items in sections %}
   {% if items %}
     {% set any_shown.v = true %}
     <h2 class="tierhead {{ key }}">{{ label }} <span class="count">{{ items|length }}</span></h2>
-    {% for item in items %}{% include "_card.html" %}{% endfor %}
+    {% for item in items %}
+      {% with collapsed = (key != 'excellent') %}{% include "_card.html" %}{% endwith %}
+    {% endfor %}
   {% endif %}
 {% endfor %}
+
 {% if not any_shown.v %}
-  <p class="empty">No new excellent, strong, or possible matches right now.</p>
+  {% if last is none %}
+    <div class="emptystate">
+      <h2>Welcome to your radar</h2>
+      <p>Job Radar scans {{ 44 }} company boards daily, scores every PM role
+      against your profile, and shows only what's worth your attention.
+      Run the first scan to fill this feed — it takes a few minutes.</p>
+    </div>
+  {% elif last.status != 'failed' %}
+    <div class="emptystate">
+      <h2>Radar's clear</h2>
+      <p>Scanned {{ last.sources_succeeded }}/{{ last.sources_attempted }} boards
+      at {{ (last.completed_at or last.started_at)[11:16] }} — nothing new worth
+      your time today. That's the system working, not a gap.</p>
+      {% if buckets.saved %}
+        <p><a href="#bucket-saved">{{ buckets.saved|length }} saved job{{ 's' if buckets.saved|length != 1 }}</a>
+        {{ 'are' if buckets.saved|length != 1 else 'is' }} still waiting on an application.</p>
+      {% endif %}
+    </div>
+  {% endif %}
 {% endif %}
 
 {% for name, items in buckets.items() %}
   {% if items %}
-    <details class="bucket">
+    <details class="bucket" id="bucket-{{ name }}">
       <summary>{{ name|capitalize }} ({{ items|length }})</summary>
-      {% for item in items %}{% include "_card.html" %}{% endfor %}
+      {% for item in items %}
+        {% with collapsed = true %}{% include "_card.html" %}{% endwith %}
+      {% endfor %}
     </details>
   {% endif %}
 {% endfor %}

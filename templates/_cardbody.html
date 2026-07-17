@@ -1,0 +1,25 @@
+{% set job = item.job %}
+<div class="meta">
+  {{ job.location }} · {{ job.remote_status }}{% if job.remote_status_provenance == 'inferred' %} (inferred){% endif %}
+  {% if job.salary_min or job.salary_max %}
+    · {{ "{:,}".format(job.salary_min) if job.salary_min else "?" }}–{{ "{:,}".format(job.salary_max) if job.salary_max else "?" }} {{ job.currency or "" }}
+  {% endif %}
+  · confidence {{ item.confidence }} · first seen {{ item.first_seen_at[:10] }} · {{ item.source }}
+</div>
+<div class="whys">
+  <div class="why-h">Why it matches</div>
+  <ul>{% for r in item.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
+  {% if item.concerns %}
+    <div class="why-h concern">Potential concerns</div>
+    <ul class="concerns">{% for c in item.concerns %}<li>{{ c }}</li>{% endfor %}</ul>
+  {% endif %}
+</div>
+<details class="more">
+  <summary>Score breakdown &amp; description</summary>
+  <table class="dims">
+    {% for k, v in item.dimension_scores.items() %}
+      <tr><td>{{ k.replace("_", " ") }}</td><td>{{ v }}/10</td></tr>
+    {% endfor %}
+  </table>
+  <pre class="desc">{{ job.description[:4000] }}</pre>
+</details>

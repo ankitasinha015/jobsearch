@@ -282,6 +282,30 @@ screenshots. No packaging/CI needed beyond a lint+test GitHub Action.
 5. Wire SQLite + Streamlit feed + save/dismiss + Tune box.
 6. Schedule daily scan; start the two-week trial; log every false positive.
 
+## Dashboard design decisions (plan-design-review 2026-07-16)
+
+Approved (to implement in app_web templates/CSS):
+1. Tiered card density (D2/1A): Excellent cards fully expanded with evidence;
+   Strong and Possible collapse to single scannable rows (score badge, title,
+   company, salary) that expand on click.
+2. Live scan progress (D3/3A): status pill shows live counts (sources done,
+   jobs scored so far, e.g. "Scoring 82/150"); while a scan runs the feed
+   shows a quiet "scan in progress — feed updates when done" chip.
+3. Designed empty states (D4/4A): quiet-day state reassures with scan facts
+   ("Radar's clear — scanned 44 boards at 7:31, nothing new worth your time")
+   plus pointer to saved-but-not-applied queue; first-run state orients with
+   one action. Utility language, no mascot energy.
+4. Tune box states (D5/5A): hx-indicator spinner + disabled submit during the
+   LLM call; failures render a visible error fragment with retry.
+5. Typography (D6/6A): IBM Plex Sans body + IBM Plex Mono score badges via
+   Google Fonts; system-ui only as fallback stack.
+6. Mobile (D8/8A): single 760px breakpoint — card stacks (content above,
+   horizontal action row below), topbar wraps, 44px touch targets. Desktop
+   unchanged.
+
+Deferred/unresolved: remove tier-colored left-border stripes (recommended,
+unanswered); DESIGN.md creation; keyboard/ARIA accessibility pass.
+
 ## What I noticed about how you think
 
 - Your PRD already contained its own scope critique: §31 says the test is "whether

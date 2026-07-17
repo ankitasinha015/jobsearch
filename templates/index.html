@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Job Radar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/style.css">
 <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </head>
@@ -23,10 +26,12 @@
   <h2>Tune the radar</h2>
   <p class="hint">Plain English — “stop showing NYC roles entirely”, “I care more about
   healthcare than dev tools”. You approve every change before it lands.</p>
-  <form hx-post="/tune/propose" hx-target="#tune-result" hx-swap="innerHTML">
+  <form hx-post="/tune/propose" hx-target="#tune-result" hx-swap="innerHTML"
+        hx-indicator="#tune-spin" hx-disabled-elt="find button">
     <textarea name="feedback" rows="3" required
       placeholder="What should the radar learn?"></textarea>
     <button type="submit" class="btn primary">Propose preferences update</button>
+    <span id="tune-spin" class="spin">Thinking through your preferences…</span>
   </form>
   <div id="tune-result"></div>
 </section>

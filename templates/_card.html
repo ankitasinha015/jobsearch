@@ -1,61 +1,33 @@
 {% set job = item.job %}
+{% set collapsed = collapsed | default(false) %}
+{% if not collapsed %}
 <article class="card tier-{{ item.tier }}">
   <div class="cardmain">
     <div class="cardhead">
       <span class="badge {{ item.tier }}">{{ item.overall }}</span>
       <strong>{{ job.title }}</strong> — {{ job.company }}
     </div>
-    <div class="meta">
-      {{ job.location }} · {{ job.remote_status }}{% if job.remote_status_provenance == 'inferred' %} (inferred){% endif %}
-      {% if job.salary_min or job.salary_max %}
-        · {{ "{:,}".format(job.salary_min) if job.salary_min else "?" }}–{{ "{:,}".format(job.salary_max) if job.salary_max else "?" }} {{ job.currency or "" }}
-      {% endif %}
-      · confidence {{ item.confidence }} · first seen {{ item.first_seen_at[:10] }} · {{ item.source }}
-    </div>
-    <div class="whys">
-      <div class="why-h">Why it matches</div>
-      <ul>{% for r in item.reasons %}<li>{{ r }}</li>{% endfor %}</ul>
-      {% if item.concerns %}
-        <div class="why-h concern">Potential concerns</div>
-        <ul class="concerns">{% for c in item.concerns %}<li>{{ c }}</li>{% endfor %}</ul>
-      {% endif %}
-    </div>
-    <details class="more">
-      <summary>Score breakdown &amp; description</summary>
-      <table class="dims">
-        {% for k, v in item.dimension_scores.items() %}
-          <tr><td>{{ k.replace("_", " ") }}</td><td>{{ v }}/10</td></tr>
-        {% endfor %}
-      </table>
-      <pre class="desc">{{ job.description[:4000] }}</pre>
-    </details>
+    {% include "_cardbody.html" %}
   </div>
   <div class="cardside">
-    <a class="btn link" href="{{ job.canonical_url or job.source_url }}" target="_blank" rel="noopener">Open posting</a>
-    {% if item.disposition is none %}
-      <form hx-post="/disposition/{{ item.job_key }}" hx-target="#feed-inner" hx-swap="outerHTML">
-        <input type="hidden" name="status" value="saved">
-        <button class="btn primary">Save</button>
-      </form>
-      <form hx-post="/disposition/{{ item.job_key }}" hx-target="#feed-inner" hx-swap="outerHTML">
-        <input type="hidden" name="status" value="dismissed">
-        <select name="reason">
-          {% for r in reasons %}<option>{{ r }}</option>{% endfor %}
-        </select>
-        <button class="btn danger">Dismiss</button>
-      </form>
-    {% else %}
-      <span class="disp">{{ item.disposition }}{% if item.disposition_reason %}: {{ item.disposition_reason }}{% endif %}</span>
-      {% if item.disposition == 'saved' %}
-        <form hx-post="/disposition/{{ item.job_key }}" hx-target="#feed-inner" hx-swap="outerHTML">
-          <input type="hidden" name="status" value="applied">
-          <button class="btn">Mark applied</button>
-        </form>
-      {% endif %}
-      <form hx-post="/disposition/{{ item.job_key }}" hx-target="#feed-inner" hx-swap="outerHTML">
-        <input type="hidden" name="status" value="restore">
-        <button class="btn">Restore</button>
-      </form>
-    {% endif %}
+    {% include "_cardactions.html" %}
   </div>
 </article>
+{% else %}
+<details class="card rowcard tier-{{ item.tier }}">
+  <summary class="rowsum">
+    <span class="badge {{ item.tier }}">{{ item.overall }}</span>
+    <span class="rowtitle"><strong>{{ job.title }}</strong> — {{ job.company }}</span>
+    <span class="rowmeta">
+      {% if job.salary_min or job.salary_max %}
+        {{ "{:,}".format(job.salary_min) if job.salary_min else "?" }}–{{ "{:,}".format(job.salary_max) if job.salary_max else "?" }} {{ job.currency or "" }} ·
+      {% endif %}
+      {{ job.remote_status }}
+    </span>
+  </summary>
+  <div class="rowexpand">
+    <div class="cardmain">{% include "_cardbody.html" %}</div>
+    <div class="cardside">{% include "_cardactions.html" %}</div>
+  </div>
+</details>
+{% endif %}

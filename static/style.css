@@ -102,3 +102,54 @@ select {
 }
 .tune-note { margin-top: 10px; font-size: 13.5px; color: var(--muted); }
 .tune-note.ok { color: var(--excellent); }
+
+/* ---- plan-design-review 2026-07-16 additions ---- */
+body { font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+.badge, .dims td:last-child, .rowmeta { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+.chip {
+  display: flex; align-items: center; gap: 12px; font-size: 13px;
+  color: var(--primary); border: 1px dashed var(--primary);
+  border-radius: 8px; padding: 8px 12px; margin: 14px 0 4px;
+}
+.chipbtn {
+  font-size: 12.5px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--primary); background: transparent; color: var(--primary);
+}
+
+.emptystate {
+  margin: 48px auto; max-width: 520px; text-align: left;
+  border: 1px solid var(--border); border-radius: 12px;
+  background: var(--card); padding: 22px 26px;
+}
+.emptystate h2 { margin: 0 0 8px; font-size: 18px; color: var(--excellent); }
+.emptystate p { color: var(--muted); font-size: 14px; margin: 6px 0; }
+.emptystate a { color: var(--primary); }
+
+.rowcard { display: block; padding: 0; }
+.rowsum {
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  padding: 10px 14px; list-style: none; min-height: 28px;
+}
+.rowsum::-webkit-details-marker { display: none; }
+.rowtitle { flex: 1; min-width: 0; font-size: 14.5px; }
+.rowmeta { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.rowexpand { display: flex; gap: 18px; padding: 4px 16px 14px; }
+.rowexpand .cardside { width: 190px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
+.rowexpand .cardmain { flex: 1; min-width: 0; }
+
+.spin { display: none; font-size: 12.5px; color: var(--muted); margin-left: 10px; }
+.htmx-request .spin, .spin.htmx-request { display: inline; }
+.tune-note.err { color: var(--danger); }
+
+@media (max-width: 760px) {
+  .topbar { padding: 10px 14px; gap: 8px; }
+  .topbar h1 { font-size: 17px; }
+  main, .tune { padding-left: 14px; padding-right: 14px; }
+  .card { flex-direction: column; gap: 10px; }
+  .rowexpand { flex-direction: column; }
+  .cardside, .rowexpand .cardside { width: 100%; flex-direction: row; flex-wrap: wrap; }
+  .cardside form { flex-direction: row; flex: 1 1 45%; }
+  .btn, select { min-height: 44px; }
+  .rowmeta { display: none; }
+}

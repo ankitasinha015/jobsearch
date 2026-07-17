@@ -1,9 +1,9 @@
 <div id="scanbar" hx-get="/scan/status" hx-trigger="every 8s" hx-swap="outerHTML">
   {% if last %}
-    {% if last.status == 'failed' %}
+    {% if scan_running %}
+      <span class="scanpill running">Scan running · {{ scoring_progress }} scored so far</span>
+    {% elif last.status == 'failed' %}
       <span class="scanpill failed">LAST SCAN FAILED — 0/{{ last.sources_attempted }} sources ({{ last.started_at }})</span>
-    {% elif scan_running %}
-      <span class="scanpill running">Scan running…</span>
     {% else %}
       <span class="scanpill ok">Last scan {{ last.completed_at or last.started_at }} ·
         {{ last.sources_succeeded }}/{{ last.sources_attempted }} sources ·

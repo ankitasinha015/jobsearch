@@ -1,0 +1,27 @@
+{% set job = item.job %}
+<a class="btn link" href="{{ job.canonical_url or job.source_url }}" target="_blank" rel="noopener">Open posting</a>
+{% if item.disposition is none %}
+  <form hx-post="/disposition/{{ item.job_key }}" hx-target="#feed-inner" hx-swap="outerHTML">
+    <input type="hidden" name="status" value="saved">
+    <button class="btn primary">Save</button>
+  </form>
+  <form hx-post="/disposition/{{ item.job_key }}" hx-target="#feed-inner" hx-swap="outerHTML">
+    <input type="hidden" name="status" value="dismissed">
+    <select name="reason">
+      {% for r in reasons %}<option>{{ r }}</option>{% endfor %}
+    </select>
+    <button class="btn danger">Dismiss</button>
+  </form>
+{% else %}
+  <span class="disp">{{ item.disposition }}{% if item.disposition_reason %}: {{ item.disposition_reason }}{% endif %}</span>
+  {% if item.disposition == 'saved' %}
+    <form hx-post="/disposition/{{ item.job_key }}" hx-target="#feed-inner" hx-swap="outerHTML">
+      <input type="hidden" name="status" value="applied">
+      <button class="btn">Mark applied</button>
+    </form>
+  {% endif %}
+  <form hx-post="/disposition/{{ item.job_key }}" hx-target="#feed-inner" hx-swap="outerHTML">
+    <input type="hidden" name="status" value="restore">
+    <button class="btn">Restore</button>
+  </form>
+{% endif %}

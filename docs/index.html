@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Radar — a personal AI radar for Product Management roles</title>
+<meta name="description" content="A single-user job-discovery system that scans 44 company boards daily, scores every PM role against one candidate's real profile, and explains every match with cited evidence.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1a202c; --muted: #5b6676;
+  --border: #e2e8f0; --accent: #0f766e; --strong: #1d4ed8; --possible: #b45309;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115; --card: #191c22; --text: #e5e7eb; --muted: #94a3b8;
+    --border: #2a2f3a; --accent: #2dd4bf; --strong: #93c5fd; --possible: #fbbf24;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.65 "IBM Plex Sans", system-ui, sans-serif;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+a { color: var(--strong); }
+
+header.hero { padding: 72px 0 40px; border-bottom: 1px solid var(--border); }
+.kicker {
+  font-family: "IBM Plex Mono", monospace; font-size: 13px;
+  color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase;
+}
+h1 { font-size: 42px; line-height: 1.15; margin: 12px 0 16px; font-weight: 600; }
+.lede { font-size: 19px; color: var(--muted); max-width: 640px; }
+.hero-links { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; }
+.pill {
+  display: inline-block; font-size: 14px; padding: 8px 16px;
+  border-radius: 999px; border: 1px solid var(--border);
+  text-decoration: none; color: var(--text);
+}
+.pill.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.numbers {
+  display: flex; gap: 36px; flex-wrap: wrap; padding: 28px 0;
+  border-bottom: 1px solid var(--border);
+}
+.num { min-width: 120px; }
+.num .n { font-family: "IBM Plex Mono", monospace; font-size: 26px; font-weight: 600; color: var(--accent); }
+.num .l { font-size: 13px; color: var(--muted); }
+
+section { padding: 44px 0 8px; }
+h2 { font-size: 24px; font-weight: 600; margin: 0 0 6px; }
+.sub { color: var(--muted); margin: 0 0 20px; max-width: 640px; }
+p { max-width: 680px; }
+
+.pipeline { display: flex; flex-wrap: wrap; gap: 0; align-items: stretch; margin: 24px 0 12px; }
+.stage {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; min-width: 128px; flex: 1;
+}
+.stage b { display: block; font-size: 14px; }
+.stage span { font-size: 12.5px; color: var(--muted); }
+.arrow { align-self: center; padding: 0 8px; color: var(--muted); font-size: 18px; }
+
+.democard {
+  background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 20px; margin: 22px 0; max-width: 680px;
+}
+.badge {
+  font-family: "IBM Plex Mono", monospace; display: inline-block; min-width: 48px;
+  text-align: center; font-size: 13px; font-weight: 600; color: #fff;
+  background: var(--accent); border-radius: 6px; padding: 2px 8px; margin-right: 8px;
+}
+.democard .meta { color: var(--muted); font-size: 13px; margin: 6px 0 10px; }
+.democard h4 { margin: 10px 0 4px; font-size: 13.5px; }
+.democard h4.warn { color: var(--possible); }
+.democard ul { margin: 4px 0; padding-left: 20px; font-size: 14px; }
+
+.rules { list-style: none; padding: 0; max-width: 680px; }
+.rules li {
+  padding: 10px 0 10px 26px; position: relative; border-bottom: 1px solid var(--border);
+  font-size: 15px;
+}
+.rules li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+
+footer {
+  margin-top: 56px; padding: 28px 0 48px; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 14px;
+}
+@media (max-width: 700px) {
+  h1 { font-size: 32px; }
+  .pipeline { flex-direction: column; }
+  .arrow { transform: rotate(90deg); align-self: flex-start; padding: 4px 0 4px 40px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">Personal AI product · built &amp; operated solo</div>
+    <h1>Job Radar</h1>
+    <p class="lede">A single-user job-discovery system that scans 44 company
+    boards every morning, scores each Product Management role against one real
+    candidate's profile, and explains every match with cited evidence — so a
+    fragmented, internet-wide job search becomes a ten-minute daily review.</p>
+    <div class="hero-links">
+      <a class="pill primary" href="https://github.com/ankitasinha015/jobsearch">View the code on GitHub</a>
+      <span class="pill mono">Python · FastAPI · HTMX · SQLite · Claude API</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="numbers">
+    <div class="num"><div class="n">44</div><div class="l">boards scanned daily</div></div>
+    <div class="num"><div class="n">5,900+</div><div class="l">postings per scan</div></div>
+    <div class="num"><div class="n">22</div><div class="l">hand-labeled calibration set</div></div>
+    <div class="num"><div class="n">37</div><div class="l">tests, all passing</div></div>
+    <div class="num"><div class="n">&le;10 min</div><div class="l">daily review target</div></div>
+  </div>
+
+  <section>
+    <h2>The product decision that shaped everything</h2>
+    <p class="sub">The original PRD had 32 sections — and its own hypothesis
+    disagreed with its scope.</p>
+    <p>Fifteen of those sections specced ingestion plumbing: scrapers, source
+    registries, adapters. But the PRD's stated hypothesis said the hard part
+    was never <em>collecting</em> jobs — it was identifying the few worth a
+    candidate's attention. Investigation confirmed discovery is commoditized:
+    Greenhouse, Lever, and Ashby all expose public JSON APIs, and aggregators
+    cover the rest. So the build inverted the ratio — <strong>borrow the
+    discovery, build the matching brain</strong> — and roughly 60% of the PRD
+    was deliberately cut or deferred behind explicit un-defer triggers.</p>
+  </section>
+
+  <section>
+    <h2>How it works</h2>
+    <div class="pipeline">
+      <div class="stage"><b>Fetch</b><span>44 ATS boards via public JSON APIs + aggregators</span></div>
+      <div class="arrow">→</div>
+      <div class="stage"><b>Normalize &amp; dedupe</b><span>one schema; near-dup merge, ATS-direct wins</span></div>
+      <div class="arrow">→</div>
+      <div class="stage"><b>Hard filters</b><span>deterministic: seniority, US-geo, visa, salary floor</span></div>
+      <div class="arrow">→</div>
+      <div class="stage"><b>LLM matcher</b><span>8 dimensions rated with cited evidence</span></div>
+      <div class="arrow">→</div>
+      <div class="stage"><b>Deterministic score</b><span>weighted 0–100 + tier, computed in code</span></div>
+    </div>
+    <p>The split of responsibilities is the design's core idea: the LLM judges
+    <em>fit</em> — with evidence quoted from both the posting and the profile —
+    while Python owns everything that must be reproducible: the weighted score,
+    tier bands, preference boosts, location caps, and every hard filter. Rules
+    the candidate states explicitly ("this company is a direct target") live in
+    config-driven code, not in prompt language, because deterministic rules
+    apply 100% of the time and LLM judgment doesn't.</p>
+
+    <div class="democard">
+      <div><span class="badge">89.6</span><strong>Staff Product Manager, AI Patient Experience</strong> — healthcare AI company</div>
+      <div class="meta">Remote US · $265–331K · confidence high</div>
+      <h4>Why it matches</h4>
+      <ul>
+        <li>Role demands eval-writing, guardrail design, and human-in-the-loop escalation — directly parallel to the candidate's clinical AI agent work</li>
+        <li>Regulated-healthcare AI product experience maps to the role's HIPAA-compliant scope</li>
+      </ul>
+      <h4 class="warn">Potential concerns</h4>
+      <ul>
+        <li>8+ years PM asked; candidate has 6+ as PM (12 total incl. engineering) — modest seniority gap</li>
+      </ul>
+    </div>
+    <p class="sub">A real card from the live feed. Every visible job carries reasons, concerns, and a per-dimension score breakdown.</p>
+  </section>
+
+  <section>
+    <h2>Calibrated against a human, honestly</h2>
+    <p>Before trusting the matcher, its owner hand-labeled 22 real postings —
+    great, borderline, and deliberately wrong — and the scorer was tuned until
+    its tiers tracked hers. The measured result: <span class="mono">21/22
+    within one tier</span>, every hard-reject correctly suppressed, and 11 of
+    13 apply-worthy roles in the primary feed. The honest finding along the
+    way: single-pass LLM scoring carries ±5–8 points of run-to-run variance,
+    so taste rules discovered during calibration (dream-company boosts, a
+    location cap, senior-IC-only scope) were promoted from prompt guidance
+    into deterministic code, where they hold every time.</p>
+  </section>
+
+  <section>
+    <h2>Product guardrails</h2>
+    <ul class="rules">
+      <li>Never invents data — unknown salary stays unknown, inferred fields are labeled inferred</li>
+      <li>Never auto-applies, contacts anyone, or acts on the candidate's behalf</li>
+      <li>Rejects on visa sponsorship only when a posting explicitly excludes it — silence is flagged, not punished</li>
+      <li>A failed source never counts as a disappeared job; a fully failed scan is loud, never an innocently empty feed</li>
+      <li>Every LLM evaluation is cached by content + prompt + preference version — cost is a dial, not a surprise</li>
+      <li>Feedback loop: dismissals with reasons and plain-English tuning edit the preference file through a human-approved diff</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Stack &amp; scale notes</h2>
+    <p>Python pipeline on a daily scheduler; SQLite in WAL mode; FastAPI + HTMX
+    dashboard with tiered card density (top matches expanded with evidence,
+    the long tail collapsed to scannable rows); Claude with prompt caching for
+    scoring bursts; pytest suite covering normalization quirks, dedup, filter
+    edges, scoring math, cache invalidation, and pipeline failure semantics.</p>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    Built by Ankita Sinha — Senior Product Manager (AI products) ·
+    <a href="https://github.com/ankitasinha015/jobsearch">github.com/ankitasinha015/jobsearch</a><br>
+    Designed and shipped end-to-end with Claude Code: PRD → adversarial reviews → build → calibration → live trial.
+  </div>
+</footer>
+
+</body>
+</html>

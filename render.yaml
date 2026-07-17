@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: job-radar
+    runtime: python
+    plan: starter          # persistent disk requires a paid instance (~$7/mo)
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app_web.py
+    healthCheckPath: /
+    disk:
+      name: radar-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: RADAR_DATA_DIR
+        value: /data
+      - key: RADAR_SCHEDULER
+        value: "1"
+      - key: RADAR_SCAN_HOUR_UTC
+        value: "14"          # 14:30 UTC = 7:30 AM Pacific
+      - key: RADAR_SCAN_MINUTE_UTC
+        value: "30"
+      - key: RADAR_JOBSPY
+        value: "0"           # aggregator scraping off in cloud (IP gets blocked fast)
+      - key: RADAR_USER
+        value: ankita
+      - key: ANTHROPIC_API_KEY
+        sync: false          # set in the Render dashboard, never in git
+      - key: RADAR_PASSWORD
+        sync: false          # set in the Render dashboard, never in git

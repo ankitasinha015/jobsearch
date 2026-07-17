@@ -86,3 +86,34 @@ def test_tune_apply_validates_yaml_and_expires_token(client, tmp_path, monkeypat
     with pytest.raises(Exception):
         tc.post("/tune/apply", data={"token": "tok2"})
     assert (tmp_path / "preferences.yaml").read_text(encoding="utf-8") == "valid: yes\n"
+
+
+def test_settings_roundtrip(client, tmp_path, monkeypatch):
+    from radar import config
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
+    tc, _ = client
+    r = tc.post("/settings", data={"profile": "# Me", "preferences": "target_roles:\n  - PM\n"},
+                follow_redirects=False)
+    assert r.status_code == 303
+    assert (tmp_path / "profile.md").read_text(encoding="utf-8") == "# Me"
+    assert "target_roles" in (tmp_path / "preferences.yaml").read_text(encoding="utf-8")
+    # invalid YAML never lands
+    import pytest as _pytest
+    with _pytest.raises(Exception):
+        tc.post("/settings", data={"profile": "", "preferences": "bad: [unclosed"})
+    assert "unclosed" not in (tmp_path / "preferences.yaml").read_text(encoding="utf-8")
+    # settings page renders with saved content
+    r = tc.get("/settings")
+    assert r.status_code == 200 and "profile.md" in r.text
+
+
+def test_basic_auth_enforced(client, monkeypatch):
+    import app_web as aw
+    monkeypatch.setattr(aw, "AUTH_PASSWORD", "s3cret")
+    tc, _ = client
+    assert tc.get("/").status_code == 401
+    import base64
+    good = {"Authorization": "Basic " + base64.b64encode(b"ankita:s3cret").decode()}
+    bad = {"Authorization": "Basic " + base64.b64encode(b"ankita:wrong").decode()}
+    assert tc.get("/", headers=good).status_code == 200
+    assert tc.get("/", headers=bad).status_code == 401

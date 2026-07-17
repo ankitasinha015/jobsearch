@@ -20,6 +20,9 @@ JOBSPY_SEARCHES = ["senior product manager AI", "staff product manager"]
 
 def run_scan(conn=None, include_jobspy: bool = True, log=print) -> dict:
     config.bootstrap_env()
+    if not config.configured():
+        raise RuntimeError(
+            "profile.md / preferences.yaml not configured — open /settings first")
     conn = conn or db.connect()
     if not db.acquire_scan_lock(conn):
         raise RuntimeError("scan already in progress")

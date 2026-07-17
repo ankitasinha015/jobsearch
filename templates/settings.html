@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Radar — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>📡 Job Radar — Settings</h1>
+  <a class="btn link" href="/" style="width:auto">← Back to feed</a>
+</header>
+<main>
+  {% if not configured %}
+  <div class="emptystate">
+    <h2>One-time setup</h2>
+    <p>The matcher needs your candidate profile and preferences. These files
+    are private — they never go to GitHub — so on a fresh deployment you paste
+    them in here once. They're stored on this server's persistent disk.</p>
+  </div>
+  {% elif saved %}
+  <div class="chip">Saved. Active jobs rescore against the new version on the next scan.</div>
+  {% endif %}
+
+  <form method="post" action="/settings">
+    <h2 class="tierhead">profile.md — who the candidate is</h2>
+    <p class="hint">Extracted from the resume. The scorer reads this verbatim on every evaluation.</p>
+    <textarea name="profile" rows="18" class="mono" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:12.5px; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); padding:12px;">{{ profile }}</textarea>
+
+    <h2 class="tierhead" style="margin-top:28px">preferences.yaml — what the radar should want</h2>
+    <p class="hint">Titles, locations, salary floor, dream companies, hard rules. Must be valid YAML — invalid input is rejected without saving.</p>
+    <textarea name="preferences" rows="18" style="width:100%; font-family:'IBM Plex Mono',monospace; font-size:12.5px; border:1px solid var(--border); border-radius:8px; background:var(--card); color:var(--text); padding:12px;">{{ preferences }}</textarea>
+
+    <div style="margin-top:16px">
+      <button type="submit" class="btn primary" style="width:auto; padding:10px 22px">Save settings</button>
+    </div>
+  </form>
+</main>
+</body>
+</html>

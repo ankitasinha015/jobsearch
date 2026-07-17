@@ -16,7 +16,15 @@
   <div id="scanbar" hx-get="/scan/status" hx-trigger="every 8s" hx-swap="outerHTML">
     {% include "_scanbar.html" %}
   </div>
+  <a class="btn link" href="/settings" style="width:auto; margin-left:auto">Settings</a>
 </header>
+{% if not configured %}
+<div class="wrapnotice" style="max-width:1080px;margin:14px auto 0;padding:0 22px">
+  <div class="chip">Profile and preferences aren't loaded yet — scans can't score.
+    <a href="/settings" class="chipbtn" style="text-decoration:none">Open settings</a>
+  </div>
+</div>
+{% endif %}
 
 <main id="feed">
   {% include "_feed.html" %}

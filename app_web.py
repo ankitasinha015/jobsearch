@@ -4,15 +4,20 @@ Run: python app_web.py   (serves http://127.0.0.1:8990)
 """
 from __future__ import annotations
 
+import base64
 import difflib
+import hmac
 import json
+import os
 import subprocess
 import sys
 import threading
+import time
+from datetime import datetime, timedelta, timezone
 
 import yaml
 from fastapi import FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -21,6 +26,28 @@ from radar import config, db
 config.bootstrap_env()
 
 app = FastAPI(title="Job Radar")
+
+# ---- auth: HTTP Basic when RADAR_PASSWORD is set (always set it in the cloud)
+AUTH_USER = os.environ.get("RADAR_USER", "ankita")
+AUTH_PASSWORD = os.environ.get("RADAR_PASSWORD")
+
+
+@app.middleware("http")
+async def basic_auth(request: Request, call_next):
+    if AUTH_PASSWORD:
+        header = request.headers.get("authorization", "")
+        ok = False
+        if header.startswith("Basic "):
+            try:
+                user, pwd = base64.b64decode(header[6:]).decode().split(":", 1)
+                ok = (hmac.compare_digest(user, AUTH_USER)
+                      and hmac.compare_digest(pwd, AUTH_PASSWORD))
+            except Exception:
+                ok = False
+        if not ok:
+            return Response(status_code=401,
+                            headers={"WWW-Authenticate": 'Basic realm="Job Radar"'})
+    return await call_next(request)
 app.mount("/static", StaticFiles(directory=str(config.ROOT / "static")), name="static")
 templates = Jinja2Templates(directory=str(config.ROOT / "templates"))
 
@@ -65,6 +92,7 @@ def feed_context(request: Request) -> dict:
         "last": dict(last) if last else None,
         "last_errors": json.loads(last["errors"] or "[]") if last else [],
         "fresh_count": len(fresh),
+        "configured": config.configured(),
     }
     c.close()
     return ctx
@@ -164,6 +192,53 @@ def tune_apply(request: Request, token: str = Form(...)):
 def tune_reject(token: str = Form(...)):
     _tune_proposals.pop(token, None)
     return HTMLResponse("<div class='tune-note'>Rejected — preferences unchanged.</div>")
+
+
+# ---- settings: load/edit profile.md + preferences.yaml (needed for cloud
+# deploys, where these gitignored files must be pasted in once)
+@app.get("/settings", response_class=HTMLResponse)
+def settings_page(request: Request, saved: int = 0):
+    return templates.TemplateResponse(request, "settings.html", {
+        "profile": config.profile_text(),
+        "preferences": config.preferences_text(),
+        "configured": config.configured(),
+        "saved": saved,
+    })
+
+
+@app.post("/settings")
+def settings_save(profile: str = Form(""), preferences: str = Form("")):
+    if preferences.strip():
+        yaml.safe_load(preferences)  # parse before write
+        config.save_preferences(preferences)
+    if profile.strip():
+        config.save_profile(profile)
+    return RedirectResponse("/settings?saved=1", status_code=303)
+
+
+# ---- in-process daily scheduler (cloud mode: RADAR_SCHEDULER=1).
+# Locally the Windows Task Scheduler job does this instead.
+def _scheduler_loop():
+    hour = int(os.environ.get("RADAR_SCAN_HOUR_UTC", "14"))       # 14:30 UTC
+    minute = int(os.environ.get("RADAR_SCAN_MINUTE_UTC", "30"))   # = 7:30 PT
+    include_jobspy = os.environ.get("RADAR_JOBSPY", "0") == "1"
+    while True:
+        now = datetime.now(timezone.utc)
+        nxt = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        if nxt <= now:
+            nxt += timedelta(days=1)
+        time.sleep(max(60, (nxt - now).total_seconds()))
+        try:
+            from radar import pipeline
+            pipeline.run_scan(include_jobspy=include_jobspy, log=print)
+        except Exception as e:  # lock held, unconfigured, transient — next day retries
+            print(f"[scheduler] scan skipped: {e}")
+
+
+@app.on_event("startup")
+def _maybe_start_scheduler():
+    if os.environ.get("RADAR_SCHEDULER") == "1":
+        threading.Thread(target=_scheduler_loop, daemon=True).start()
 
 
 if __name__ == "__main__":

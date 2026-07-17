@@ -6,10 +6,10 @@ import sqlite3
 import time
 from pathlib import Path
 
-from .config import ROOT
+from .config import DATA_DIR
 from .models import Job
 
-DB_PATH = ROOT / "radar.db"
+DB_PATH = DATA_DIR / "radar.db"
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS jobs (

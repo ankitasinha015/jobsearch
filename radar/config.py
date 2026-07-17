@@ -11,6 +11,21 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 CA_BUNDLE = r"C:\Users\ankit\certs\cacert.pem"
 
+# Personal data (radar.db, profile.md, preferences.yaml) lives in DATA_DIR.
+# Locally that's the repo folder (gitignored files); in the cloud it's a
+# persistent disk (RADAR_DATA_DIR=/data) because these files are never in git.
+DATA_DIR = Path(os.environ.get("RADAR_DATA_DIR", str(ROOT)))
+
+
+def _data_file(name: str) -> Path:
+    p = DATA_DIR / name
+    return p if p.exists() else ROOT / name
+
+
+def configured() -> bool:
+    """True when the scorer's personal inputs exist."""
+    return _data_file("profile.md").exists() and _data_file("preferences.yaml").exists()
+
 
 def bootstrap_env() -> None:
     """Set TLS bundle + API key. Call before importing anthropic/requests users."""
@@ -36,11 +51,23 @@ def load_companies() -> list[dict]:
 
 
 def preferences_text() -> str:
-    return (ROOT / "preferences.yaml").read_text(encoding="utf-8")
+    p = _data_file("preferences.yaml")
+    return p.read_text(encoding="utf-8") if p.exists() else ""
 
 
 def profile_text() -> str:
-    return (ROOT / "profile.md").read_text(encoding="utf-8")
+    p = _data_file("profile.md")
+    return p.read_text(encoding="utf-8") if p.exists() else ""
+
+
+def save_preferences(text: str) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    (DATA_DIR / "preferences.yaml").write_text(text, encoding="utf-8")
+
+
+def save_profile(text: str) -> None:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    (DATA_DIR / "profile.md").write_text(text, encoding="utf-8")
 
 
 def prefs_hash() -> str:

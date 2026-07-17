@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "radar-web",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["app_web.py"],
+      "port": 8990,
+      "autoPort": true
+    }
+  ]
+}

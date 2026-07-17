@@ -1,0 +1,9 @@
+<pre class="diff">{{ diff }}</pre>
+<form hx-post="/tune/apply" hx-target="#tune-result" hx-swap="innerHTML" style="display:inline">
+  <input type="hidden" name="token" value="{{ token }}">
+  <button class="btn primary">Approve — apply &amp; rescore on next scan</button>
+</form>
+<form hx-post="/tune/reject" hx-target="#tune-result" hx-swap="innerHTML" style="display:inline">
+  <input type="hidden" name="token" value="{{ token }}">
+  <button class="btn">Reject</button>
+</form>

@@ -100,11 +100,19 @@ def _scan(conn, include_jobspy: bool, log) -> dict:
     raw_count = len(batch)
     batch = dedupe_batch(batch, threshold)
 
+    # Preload active jobs grouped by company ONCE — querying and JSON-parsing
+    # the whole table per incoming job is quadratic (found by the first full
+    # 44-board scan, which spent 30+ minutes here).
+    existing_by_co: dict[str, list[Job]] = {}
+    for row in conn.execute("SELECT data FROM jobs WHERE status='active'"):
+        j = Job.model_validate_json(row["data"])
+        existing_by_co.setdefault(j.normalized_company, []).append(j)
+
     new_count = updated_count = 0
     to_score: list[Job] = []
     for job in batch:
         existing = match_existing(
-            job, db.active_jobs_for_company(conn, job.normalized_company), threshold)
+            job, existing_by_co.get(job.normalized_company, []), threshold)
         if existing and existing.job_key != job.job_key:
             # near-dup of a stored job from another source: refresh, don't re-add
             seen_by_source.get(existing.source, set()).add(existing.job_key)
@@ -112,6 +120,7 @@ def _scan(conn, include_jobspy: bool, log) -> dict:
         state = db.upsert_job(conn, job)
         if state == "new":
             new_count += 1
+            existing_by_co.setdefault(job.normalized_company, []).append(job)
         elif state == "updated":
             updated_count += 1
         reason = hard_filter(job)

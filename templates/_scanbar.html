@@ -1,0 +1,19 @@
+<div id="scanbar" hx-get="/scan/status" hx-trigger="every 8s" hx-swap="outerHTML">
+  {% if last %}
+    {% if last.status == 'failed' %}
+      <span class="scanpill failed">LAST SCAN FAILED — 0/{{ last.sources_attempted }} sources ({{ last.started_at }})</span>
+    {% elif scan_running %}
+      <span class="scanpill running">Scan running…</span>
+    {% else %}
+      <span class="scanpill ok">Last scan {{ last.completed_at or last.started_at }} ·
+        {{ last.sources_succeeded }}/{{ last.sources_attempted }} sources ·
+        {{ last.raw_count }} raw · {{ last.new_count }} new · {{ last.scored_count }} scored
+        {% if last_errors %} · {{ last_errors|length }} errors{% endif %}</span>
+    {% endif %}
+  {% else %}
+    <span class="scanpill">No scans yet</span>
+  {% endif %}
+  <form hx-post="/scan" hx-target="#scanbar" hx-swap="outerHTML" style="display:inline">
+    <button class="btn" {% if scan_running %}disabled{% endif %}>Run scan now</button>
+  </form>
+</div>

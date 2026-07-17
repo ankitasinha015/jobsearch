@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Radar</title>
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+</head>
+<body>
+<header class="topbar">
+  <h1>📡 Job Radar</h1>
+  <div id="scanbar" hx-get="/scan/status" hx-trigger="every 8s" hx-swap="outerHTML">
+    {% include "_scanbar.html" %}
+  </div>
+</header>
+
+<main id="feed">
+  {% include "_feed.html" %}
+</main>
+
+<section class="tune">
+  <h2>Tune the radar</h2>
+  <p class="hint">Plain English — “stop showing NYC roles entirely”, “I care more about
+  healthcare than dev tools”. You approve every change before it lands.</p>
+  <form hx-post="/tune/propose" hx-target="#tune-result" hx-swap="innerHTML">
+    <textarea name="feedback" rows="3" required
+      placeholder="What should the radar learn?"></textarea>
+    <button type="submit" class="btn primary">Propose preferences update</button>
+  </form>
+  <div id="tune-result"></div>
+</section>
+</body>
+</html>

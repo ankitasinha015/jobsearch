@@ -1,0 +1,22 @@
+<div id="feed-inner">
+{% set any_shown = namespace(v=false) %}
+{% for key, label, items in sections %}
+  {% if items %}
+    {% set any_shown.v = true %}
+    <h2 class="tierhead {{ key }}">{{ label }} <span class="count">{{ items|length }}</span></h2>
+    {% for item in items %}{% include "_card.html" %}{% endfor %}
+  {% endif %}
+{% endfor %}
+{% if not any_shown.v %}
+  <p class="empty">No new excellent, strong, or possible matches right now.</p>
+{% endif %}
+
+{% for name, items in buckets.items() %}
+  {% if items %}
+    <details class="bucket">
+      <summary>{{ name|capitalize }} ({{ items|length }})</summary>
+      {% for item in items %}{% include "_card.html" %}{% endfor %}
+    </details>
+  {% endif %}
+{% endfor %}
+</div>
